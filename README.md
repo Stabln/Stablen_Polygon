@@ -1,13 +1,11 @@
-# Sample Hardhat Project
+# StablenNFT
 
-This project demonstrates a basic Hardhat use case. It comes with a sample contract, a test for that contract, and a script that deploys that contract.
 
-Try running some of the following tasks:
+## DEMO
+This contract has only two functions, mintWithTenUSD() and redeem().
+mintWithTenUSD(): User can mint by paying 10 USD
+redeem(): redeem USD they paid, and return NFT to this contract
 
-```shell
-npx hardhat help
-npx hardhat test
-REPORT_GAS=true npx hardhat test
-npx hardhat node
-npx hardhat run scripts/deploy.js
-```
+### In Demo,
+* 1. Only USDC is used
+* 2. After redeem, NFT is lock into contract.
