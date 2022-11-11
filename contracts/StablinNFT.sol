@@ -24,7 +24,7 @@ interface IUSDC {
 //  * 1. Only USDC is used
 //  * 2. After redeem, NFT is lock into contract.
 */ 
-contract Stablen is ERC721, Ownable{
+contract Stablin is ERC721, Ownable{
 
 // using SafeERC20 for IERC20
 
@@ -48,9 +48,9 @@ contract Stablen is ERC721, Ownable{
     event mintNFT_FiftyUSD(address owner, uint256 tokenId);
     event mintNFT_TenUSD(address owner, uint256 tokenId);
 
-    constructor(uint256 _totalSupply, address _USDC, address _USDT) ERC721("Stablen",  "STB") {
+    constructor(uint256 _totalSupply, address _USDC, address _USDT) ERC721("Stablin",  "STB") {
         require(_USDC != address(0), "USDC is ZERO ADDRESS");
-        require(_USDT != address(0), "USDT is ZERO ADDRESS");
+        require(_USDT != address(0), "USDT is ZERO ADDRESS");https://github.com/Stabln/Stablen_Polygon/blob/main/contracts/StableNFT.sol
 
         USDT = _USDT;
         USDC = _USDC;
