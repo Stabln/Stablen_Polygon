@@ -38,6 +38,7 @@ contract Stablin is ERC721, Ownable{
     uint256 public totalSupply;
     uint256 public totalSupplyTenUSD;
     uint256 public totalSupplyFiftyUSD;
+    uint256 public totalFeeClaimed;
     mapping (uint256 => NFTInfo) public NFTInfos; // token Id => NFTInfo
 
     // munbai USTC: 0xFEca406dA9727A25E71e732F9961F680059eF1F9
@@ -50,7 +51,7 @@ contract Stablin is ERC721, Ownable{
 
     constructor(uint256 _totalSupply, address _USDC, address _USDT) ERC721("Stablin",  "STB") {
         require(_USDC != address(0), "USDC is ZERO ADDRESS");
-        require(_USDT != address(0), "USDT is ZERO ADDRESS");https://github.com/Stabln/Stablen_Polygon/blob/main/contracts/StableNFT.sol
+        require(_USDT != address(0), "USDT is ZERO ADDRESS");
 
         USDT = _USDT;
         USDC = _USDC;
@@ -70,12 +71,15 @@ contract Stablin is ERC721, Ownable{
         require(totalSupplyTenUSD < 50, "exceed total supply");
         uint256 tokenId = totalSupplyTenUSD;
         
+        // 10USD for NFT and 1% fee
+        uint256 amount = getBuyAmount(10*10**6);
         // must approve the contract for payment
         if(paymentToken == USDT){
-            IUSDT(USDT).transferFrom(msg.sender, address(this), 10*10**6);
+            // USDT payment
+            IUSDT(USDT).transferFrom(msg.sender, address(this), amount);
         } else if(paymentToken == USDC){
-        // USDC payment
-            IUSDC(USDC).transferFrom(msg.sender, address(this), 10*10**6);
+            // USDC payment
+            IUSDC(USDC).transferFrom(msg.sender, address(this), amount);
         } else{
             revert("Wrong Payment Token");
         }
@@ -86,13 +90,13 @@ contract Stablin is ERC721, Ownable{
             10*10**6,
             msg.sender
         );
-
+        
+        // save fee data
+        totalFeeClaimed+= 10*10**4;
+        // mint token
         totalSupplyTenUSD++;
         _safeMint(msg.sender, tokenId);
-
-        emit mintNFT_TenUSD(msg.sender, tokenId);
     }
-
 
     /// @notice Users can redeem USDT or USDC, and return NFT to contract
     /// @dev Transfers the `paymentToken` to `msg.sender` and `safeTransferFrom` NFT to address(this)
@@ -103,24 +107,43 @@ contract Stablin is ERC721, Ownable{
 
         // later used for payment
         NFTInfo memory tokenInfo = NFTInfos[tokenId];
-
+        
+        // update Info of NFT
         NFTInfos[tokenId] = NFTInfo(
             tokenId,
             address(0),
             10*10**6,
             address(this)
         );
-        // token 회수
+
+        // NFT 회수
         safeTransferFrom(msg.sender, address(this), tokenId);
         
         // token 돈 다시 보내주기
+        // amount = 99%
+        uint256 amount = tokenInfo.tokenAmount - (tokenInfo.tokenAmount * 1 / 100);
+
         // maybe just use safeTransfer
         if(tokenInfo.paymentToken == USDT){
-            IUSDT(USDT).transfer(tokenOwner, tokenInfo.tokenAmount);
+            IUSDT(USDT).transfer(tokenOwner, amount);
         } else {
-            IUSDC(USDC).transfer(tokenOwner, tokenInfo.tokenAmount);
+            IUSDC(USDC).transfer(tokenOwner, amount);
         }
+
+        totalFeeClaimed+= 10*10**4;
     }
+    
+    // only for the DEMO!!!
+    function feeRedeem() public {
+        // require(msg.sender == ownerOf(0), "Wrong Fee Collector");
+        IUSDT(USDT).transfer(msg.sender, totalFeeClaimed);
+        totalFeeClaimed = 0;
+    }
+    
+    function getBuyAmount(uint256 price) public pure returns(uint256 amount){
+        amount = price + (price * 1 / 100);
+    }
+
 
     function onERC721Received(address, address, uint256, bytes calldata) external returns (bytes4){
         return IERC721Receiver.onERC721Received.selector;
